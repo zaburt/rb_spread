@@ -345,7 +345,7 @@ spconn_connect(int argc, VALUE *argv, VALUE obj)
 
     SafeStringValue(host_str);
 
-    if ((n = SP_connect(RSTRING(host_str)->ptr,
+    if ((n = SP_connect(RSTRING_PTR(host_str),
                         c_name_str,
                         0, /* ignored */
                         BOOL2INT(all_msgs),
@@ -354,7 +354,7 @@ spconn_connect(int argc, VALUE *argv, VALUE obj)
         raise_sp_error(n);
 
     snprintf(sp_conn->spread_name, MAX_PROC_NAME, "%s",
-             RSTRING(host_str)->ptr);
+             RSTRING_PTR(host_str));
     sp_conn->connected = true;
 
     return Qnil;
@@ -408,9 +408,9 @@ spconn_join(VALUE obj, VALUE group)
     Data_Get_Struct(obj, struct SpreadConnection, sp);
     if (TYPE(group) == T_ARRAY)
     {
-        for (i = 0; i < RARRAY(group)->len; i++)
+        for (i = 0; i < RARRAY_LEN(group); i++)
         {
-            VALUE tmp = RARRAY(group)->ptr[i];
+            VALUE tmp = RARRAY_PTR(group)[i];
             if ((n = SP_join(sp->mbox, StringValuePtr(tmp))) < 0)
                 raise_sp_error(n);
         }
@@ -446,9 +446,9 @@ spconn_leave(VALUE obj, VALUE group)
     if (TYPE(group) == T_ARRAY)
     {
         int i;
-        for (i = 0; i < RARRAY(group)->len; i++)
+        for (i = 0; i < RARRAY_LEN(group); i++)
         {
-            VALUE tmp = RARRAY(group)->ptr[i];
+            VALUE tmp = RARRAY_PTR(group)[i];
             if ((n = SP_leave(sp->mbox, StringValuePtr(tmp))) < 0)
                 raise_sp_error(n);
         }
@@ -514,23 +514,23 @@ spconn_multicast(int argc, VALUE *argv, VALUE obj)
         char groupnames[MAX_GROUPS][MAX_GROUP_NAME];
         int i;
 
-        if (RARRAY(group)->len == 0)
+        if (RARRAY_LEN(group) == 0)
             return Qnil;
-        if (RARRAY(group)->len >= MAX_GROUPS)
+        if (RARRAY_LEN(group) >= MAX_GROUPS)
             rb_raise(rb_eArgError, "too many groups for multicast");
 
-        for (i = 0; i < RARRAY(group)->len; i++)
+        for (i = 0; i < RARRAY_LEN(group); i++)
         {
-            VALUE tmp = RARRAY(group)->ptr[i];
+            VALUE tmp = RARRAY_PTR(group)[i];
             snprintf(groupnames[i], MAX_GROUP_NAME, "%s",
                      StringValuePtr(tmp));
         }
         if ((n = SP_multigroup_multicast(sp->mbox, service_type,
-                                         RARRAY(group)->len,
+                                         RARRAY_LEN(group),
                                          (const char (*)[]) groupnames,
                                          NUM2INT(mtype),
-                                         RSTRING(message)->len,
-                                         RSTRING(message)->ptr)) < 0)
+                                         RSTRING_LEN(message),
+                                         RSTRING_PTR(message))) < 0)
             raise_sp_error(n);
     }
     else
@@ -540,8 +540,8 @@ spconn_multicast(int argc, VALUE *argv, VALUE obj)
                               service_type,
                               StringValuePtr(group),
                               NUM2INT(mtype),
-                              RSTRING(message)->len,
-                              RSTRING(message)->ptr)) < 0)
+                              RSTRING_LEN(message),
+                              RSTRING_PTR(message))) < 0)
             raise_sp_error(n);
     }
 
