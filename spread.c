@@ -191,7 +191,7 @@ sperr_initialize(VALUE self, VALUE err_code, VALUE err_msg)
 
 	Data_Get_Struct(self, struct SpreadError, sp_err);
 	sp_err->err_code = NUM2INT(err_code);
-	strcpy(sp_err->err_msg, STR2CSTR(err_msg));
+	strcpy(sp_err->err_msg, StringValuePtr(err_msg));
 
 	rb_call_super(1, &err_msg);
 	return Qnil;
